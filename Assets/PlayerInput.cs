@@ -30,7 +30,7 @@ public class PlayerInput : MonoBehaviour {
         {
             targetCharacter.MoveLand(-1f);
         }
-        if (Input.GetKey(jumpKey))
+        if (Input.GetKeyDown(jumpKey))
         {
             targetCharacter.MoveJump(1f);
         }
