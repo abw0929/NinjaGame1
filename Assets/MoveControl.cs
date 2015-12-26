@@ -110,7 +110,10 @@ public class MoveControl : MonoBehaviour {
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.contacts[0].normal.y != 0)
+        if (collision.gameObject.tag != "Platform")
+            return;
+
+        if (collision.contacts[0].normal.y > 0)
         {
             _onGroundStatus = OnGroundStatus.OnGround;
         }
@@ -129,7 +132,10 @@ public class MoveControl : MonoBehaviour {
 
     void OnCollisionExit2D(Collision2D collision)
     {
-        if (collision.contacts[0].normal.y != 0)
+        if (collision.gameObject.tag != "Platform")
+            return;
+
+        if (collision.contacts[0].normal.y > 0)
         {
             _onGroundStatus = OnGroundStatus.InAir;
         }
