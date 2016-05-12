@@ -105,12 +105,12 @@ public class PlayerScreenInput : MonoBehaviour {
                 }
             case InputType.Down:
                 {
-                    targetCharacter.MoveLand(-1f);
+                    targetCharacter.Land(1f);
                     break;
                 }
             case InputType.Jump:
                 {
-                    targetCharacter.MoveJump(1f);
+                    targetCharacter.Jump(1f);
                     break;
                 }
             case InputType.Attack:

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public enum OnWallStatus
 {
@@ -14,135 +13,138 @@ public enum OnGroundStatus
     InAir = 1
 }
 
-public class MoveControl : MonoBehaviour {
-
-
-    private const float minSpeed = 1f;
-    private const float maxSpeed = 5f;
-    private const float minJump = 1f;
-    private const float maxJump = 10f;
-
+public class MoveControl : MonoBehaviour
+{
+    private const float MIN_SPEED = 1f;
+    private const float MAX_SPEED = 5f;
+    private const float MIN_JUMP = 1f;
+    private const float MAX_JUMP = 10f;
 
     [SerializeField]
-    private float speedModifier;
+    private float speedModifier = 3f;
     [SerializeField]
-    private float jumpModifier;
+    private float jumpModifier = 6f;
+    [SerializeField]
+    private bool canClimbWall = false;
 
     private new Rigidbody2D rigidbody2D;
     private new Transform transform;
 
-    
-    private OnGroundStatus _onGroundStatus;
-    private OnWallStatus _onWallStatus;
+    private OnGroundStatus onGroundStatus;
+    private OnWallStatus onWallStatus;
 
+    public OnGroundStatus OnGroundStatus
+    {
+        get { return onGroundStatus; }
+    }
 
-    public OnGroundStatus onGroundStatus
+    public OnWallStatus OnWallStatus
     {
-        get { return _onGroundStatus; }
+        get { return onWallStatus; }
     }
-    public OnWallStatus onWallStatus
-    {
-        get { return _onWallStatus; }
-    }
-    private bool isHorizontalStill
+
+    public bool IsHorizontalStill
     {
         get { return (rigidbody2D.velocity.x == 0); }
     }
-    private bool isVerticalStill
+
+    public bool IsVerticalStill
     {
         get { return (rigidbody2D.velocity.y == 0); }
     }
 
 
-    void Awake ()
+    private void Awake ()
     {
-        speedModifier = Mathf.Clamp(speedModifier, minSpeed, maxSpeed);
-        jumpModifier = Mathf.Clamp(jumpModifier, minJump, maxJump);
+        speedModifier = Mathf.Clamp(speedModifier, MIN_SPEED, MAX_SPEED);
+        jumpModifier = Mathf.Clamp(jumpModifier, MIN_JUMP, MAX_JUMP);
 
         rigidbody2D = GetComponent<Rigidbody2D>();
         transform = GetComponent<Transform>();
 
-        _onGroundStatus = OnGroundStatus.OnGround;
-        _onWallStatus = OnWallStatus.None;
+        onGroundStatus = OnGroundStatus.OnGround;
+        onWallStatus = OnWallStatus.None;
     }
 
 
     public void MoveHorizontal(float speed)
     {
-        speed = Mathf.Clamp(speed, -1f, 1f);
+        float leftBound = (!canClimbWall && onWallStatus == OnWallStatus.OnLeft ? 0f : -1f);
+        float rightBound = (!canClimbWall && onWallStatus == OnWallStatus.OnRight ? 0f : 1f);
+
+        speed = Mathf.Clamp(speed, leftBound, rightBound);
         rigidbody2D.AddForce(new Vector2(speed * speedModifier * 10f, 0f));
 
-        Vector2 velocity = rigidbody2D.velocity;
-        velocity.x = Mathf.Clamp(velocity.x, -1f * speedModifier, 1f * speedModifier);
-        rigidbody2D.velocity = velocity;
+        rigidbody2D.velocity = new Vector2(Mathf.Clamp(rigidbody2D.velocity.x, -1f * speedModifier, 1f * speedModifier), rigidbody2D.velocity.y);
     }
 
 
-    public void MoveJump(float speed)
+    public void Jump(float speed)
     {
-        if (_onWallStatus == OnWallStatus.None && _onGroundStatus == OnGroundStatus.InAir)
+        if (onWallStatus == OnWallStatus.None && onGroundStatus == OnGroundStatus.InAir)
             return;
 
         speed = Mathf.Clamp(speed, 0f, 1f);
 
-        if (_onGroundStatus == OnGroundStatus.OnGround)
+        if (onGroundStatus == OnGroundStatus.OnGround)
         {
             rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, speed * jumpModifier);
         }
-        else if(_onWallStatus == OnWallStatus.OnLeft)
+        else if(onWallStatus == OnWallStatus.OnLeft && canClimbWall)
         {
             rigidbody2D.velocity = new Vector2(1f * speedModifier, speed * jumpModifier);
         }
-        else if (_onWallStatus == OnWallStatus.OnRight)
+        else if (onWallStatus == OnWallStatus.OnRight && canClimbWall)
         {
             rigidbody2D.velocity = new Vector2(-1f * speedModifier, speed * jumpModifier);
         }
     }
 
-    public void MoveLand(float speed)
+
+    public void Land(float speed)
     {
-        if (_onWallStatus != OnWallStatus.None || _onGroundStatus != OnGroundStatus.InAir)
+        if (onWallStatus != OnWallStatus.None || onGroundStatus != OnGroundStatus.InAir)
             return;
 
-        speed = Mathf.Clamp(speed, -1f, 0f);
+        speed = -Mathf.Clamp(speed, 0f, 1f);
         rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, speed * jumpModifier);
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
+
+    private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.tag != "Platform")
             return;
 
         if (collision.contacts[0].normal.y > 0)
         {
-            _onGroundStatus = OnGroundStatus.OnGround;
+            onGroundStatus = OnGroundStatus.OnGround;
         }
-        else
+        else if (collision.contacts[0].normal.x < 0)
         {
-            if(collision.contacts[0].normal.x < 0)
-            {
-                _onWallStatus = OnWallStatus.OnRight;
-            }
-            else
-            {
-                _onWallStatus = OnWallStatus.OnLeft;
-            }
+            onWallStatus = OnWallStatus.OnRight;
+        }
+        else if (collision.contacts[0].normal.x > 0)
+        {
+            onWallStatus = OnWallStatus.OnLeft;
         }
     }
 
-    void OnCollisionExit2D(Collision2D collision)
+
+    private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.gameObject.tag != "Platform")
             return;
 
         if (collision.contacts[0].normal.y > 0)
         {
-            _onGroundStatus = OnGroundStatus.InAir;
+            onGroundStatus = OnGroundStatus.InAir;
         }
         else
         {
-            _onWallStatus = OnWallStatus.None;
+            onWallStatus = OnWallStatus.None;
         }
     }
 
 }
+

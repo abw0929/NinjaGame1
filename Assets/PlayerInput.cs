@@ -28,11 +28,11 @@ public class PlayerInput : MonoBehaviour {
         }
         else if (Input.GetKey(downKey))
         {
-            targetCharacter.MoveLand(-1f);
+            targetCharacter.Land(1f);
         }
         if (Input.GetKeyDown(jumpKey))
         {
-            targetCharacter.MoveJump(1f);
+            targetCharacter.Jump(1f);
         }
     }
 }

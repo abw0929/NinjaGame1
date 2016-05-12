@@ -979,6 +979,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speedModifier: 3
   jumpModifier: 6
+  canClimbWall: 1
 --- !u!1 &1947911561
 GameObject:
   m_ObjectHideFlags: 0
