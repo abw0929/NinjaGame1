@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public enum InputType
@@ -40,50 +41,50 @@ public class PlayerScreenInput : MonoBehaviour {
 
     void Update()
     {
-        if(Input.touchCount > 0)
-        {
-            for (int i = 0; i < Input.touchCount; i++)
-            {
-                Touch touch = Input.GetTouch(i);
-                if (touch.phase == TouchPhase.Began)
-                {
-                    RaycastHit2D hitInfo = Physics2D.Raycast(
-                        Camera.main.ScreenToWorldPoint(touch.position), Vector2.zero);
-                    if (hitInfo.collider != null)
-                    {
-                        string collidername = hitInfo.collider.name;
-                        if (collidername == name)
-                        {
-                            SendMouseSignal();
-                            mouseDownStatus = MouseDownStatus.MouseDown;
-                            touchID = i;
-                        }
-                    }
-                }
-                else if(touch.phase == TouchPhase.Ended && i == touchID)
-                {
-                    mouseDownStatus = MouseDownStatus.None;
-                    touchID = -1;
-                }
-            }
-        }
+        //    if(Input.touchCount > 0)
+        //    {
+        //        for (int i = 0; i < Input.touchCount; i++)
+        //        {
+        //            Touch touch = Input.GetTouch(i);
+        //            if (touch.phase == TouchPhase.Began)
+        //            {
+        //                RaycastHit2D hitInfo = Physics2D.Raycast(
+        //                    Camera.main.ScreenToWorldPoint(touch.position), Vector2.zero);
+        //                if (hitInfo.collider != null)
+        //                {
+        //                    string collidername = hitInfo.collider.name;
+        //                    if (collidername == name)
+        //                    {
+        //                        SendMouseSignal();
+        //                        mouseDownStatus = MouseDownStatus.MouseDown;
+        //                        touchID = i;
+        //                    }
+        //                }
+        //            }
+        //            else if(touch.phase == TouchPhase.Ended && i == touchID)
+        //            {
+        //                mouseDownStatus = MouseDownStatus.None;
+        //                touchID = -1;
+        //            }
+        //        }
+        //    }
 
-        if(doPress && mouseDownStatus == MouseDownStatus.MouseDown)
+        if (doPress && mouseDownStatus == MouseDownStatus.MouseDown)
         {
             SendMouseSignal();
         }
     }
 
- //	  void OnMouseDown()
- //   {
- //       mouseDownStatus = MouseDownStatus.MouseDown;
- //       SendMouseSignal();
- //   }
+    public void OnMouseDown()
+    {
+        mouseDownStatus = MouseDownStatus.MouseDown;
+        SendMouseSignal();
+    }
 
- //   void OnMouseUp()
- //   {
- //       mouseDownStatus = MouseDownStatus.None;
- //   }
+    public void OnMouseUp()
+    {
+        mouseDownStatus = MouseDownStatus.None;
+    }
 
     void SendMouseSignal()
     {
